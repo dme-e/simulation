@@ -1,21 +1,30 @@
-def get_temperature_factor(temperature):
-    if temperature <= 10:
-        return 1.00
-    elif temperature <= 12:
-        return 0.90
-    elif temperature <= 14:
-        return 0.80
-    elif temperature <= 16:
-        return 0.70
-    elif temperature <= 18:
-        return 0.60
-    elif temperature <= 20:
-        return 0.50
-    elif temperature <= 22:
-        return 0.40
-    elif temperature <= 24:
-        return 0.30
-    elif temperature <= 26:
-        return 0.20
-    else:
-        return 0.10
+"""Temperature-factor lookup used by the rain model."""
+
+
+# Sorted from highest temperature threshold to lowest.  The first matching row
+# is the factor that applies.
+_TEMPERATURE_TABLE = (
+    (28, 0.10),
+    (26, 0.20),
+    (24, 0.30),
+    (22, 0.40),
+    (20, 0.50),
+    (18, 0.60),
+    (16, 0.70),
+    (14, 0.80),
+    (12, 0.90),
+    (10, 1.00),
+)
+
+
+def get_temperature_factor(temperature: float) -> float:
+    """Return the temperature factor for a given Celsius value.
+
+    The guide provides discrete values; this function assigns the factor of the
+    nearest lower-or-equal reference temperature.  Temperatures above 28 °C get
+    the lowest factor (0.10) and temperatures below 10 °C get the highest (1.00).
+    """
+    for threshold, factor in _TEMPERATURE_TABLE:
+        if temperature >= threshold:
+            return factor
+    return 1.00

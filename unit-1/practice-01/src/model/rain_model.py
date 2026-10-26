@@ -1,18 +1,43 @@
-from model.temperature import get_temperature_factor
-from model.strategies import RainModelStrategy
+"""Core rain prediction model."""
+
+from src.model.temperature import get_temperature_factor
+from src.model.strategies import RainModelStrategy
+from src.model.state_classifier import StateClassifier
+from src.model.validators import validate_reading
 
 
 class RainModel:
-    def __init__(self, strategy: RainModelStrategy):
-        self.strategy = strategy
+    """Rain model composed of a calculation strategy and a state classifier.
 
-    def calculate(self, humidity, cloudiness, temperature):
-        h = humidity / 100
-        n = cloudiness / 100
+    The model is deliberately small: it validates inputs, normalises the
+    percentage variables, delegates the index calculation to a strategy, and
+    classifies the result.  Each collaborator can be replaced or extended
+    independently.
+    """
+
+    def __init__(
+        self,
+        strategy: RainModelStrategy,
+        classifier: StateClassifier | None = None,
+    ):
+        self.strategy = strategy
+        self.classifier = classifier or StateClassifier()
+
+    def calculate(
+        self,
+        humidity: float,
+        cloudiness: float,
+        temperature: float,
+    ) -> dict:
+        """Calculate the rain index and state for a single reading."""
+        validate_reading(humidity, cloudiness, temperature)
+
+        h = humidity / 100.0
+        n = cloudiness / 100.0
         tf = get_temperature_factor(temperature)
 
         index = self.strategy.calculate_index(h, n, tf)
-        state = self._get_state(index)
+        state = self.classifier.classify(index)
 
         return {
             "humidity": h,
@@ -20,15 +45,5 @@ class RainModel:
             "temperature": temperature,
             "temperature_factor": tf,
             "index": index,
-            "state": state
+            "state": state,
         }
-
-    def _get_state(self, index):
-        if index < 0.40:
-            return "Sin lluvia"
-        elif index < 0.60:
-            return "Baja posibilidad"
-        elif index < 0.75:
-            return "Lluvia probable"
-        else:
-            return "Lluvia"

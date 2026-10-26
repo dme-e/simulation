@@ -38,11 +38,17 @@ El modelo de NetLogo está en formato `.nlogox` (el de NetLogo 7). No le cambies
 
 Necesitas tener instalados un JDK y NetLogo de escritorio. No hace falta Maven, Gradle ni descargar librerías.
 
-Abre una terminal en la carpeta `practica04-simulacion` y ejecuta:
+Abre una terminal en la carpeta `unit-1/practice-04` y ejecuta:
 
 ```bash
-javac -encoding UTF-8 --release 11 -d build src/Main.java src/modelo/*.java src/vista/*.java src/controlador/*.java
+javac -encoding UTF-8 --release 11 -d build src/Main.java src/modelo/*.java src/vista/*.java src/controlador/*.java src/verificacion/*.java
 java -cp build Main
+```
+
+Para ejecutar la verificación automática de invariantes (requiere aserciones habilitadas):
+
+```bash
+java -ea -cp build verificacion.VerificacionSIR
 ```
 
 El programa imprime en consola una tabla cada diez pasos, el máximo de infectados, el tiempo en que ocurre y cuánto tardó el cálculo. También guarda las 101 filas (de t = 0 a t = 100) en estos archivos:
@@ -59,7 +65,7 @@ Cada vez que ejecutas Java estos archivos se reemplazan. Si cambias el código, 
 ## 4. Uso en NetLogo
 
 1. Abre `netlogo/modelo_sir_netlogo.nlogox` con NetLogo 7.
-2. Si quieres cambiar parámetros, edítalos en `src/modelo/SimulacionSIR.java`, compila y ejecuta Java desde la raíz del proyecto.
+2. Si quieres cambiar parámetros, edita la constante `POR_DEFECTO` en `src/modelo/ConfiguracionSIR.java` o crea una nueva instancia de `ConfiguracionSIR` en `Main.java`, compila y ejecuta Java desde la raíz del proyecto.
 3. Pulsa **ACTUALIZAR JAVA**. NetLogo reinicia el escenario, lee los parámetros y los resultados que exportó Java y muestra los valores que quedaron activos. El botón **setup** carga los mismos archivos.
 4. Pulsa **go**. Es un botón continuo: avanza la simulación de NetLogo hasta el tiempo 100, y si lo vuelves a pulsar la interrumpe.
 5. Observa a las personas moverse y cómo se van armando las curvas paso a paso.
@@ -128,7 +134,7 @@ No se resuelven las ecuaciones: se usa la alternativa discreta por agentes que p
 ## 6. Estructura del proyecto
 
 ```text
-practica04-simulacion/
+unit-1/practice-04/
 ├── README.md
 ├── .gitignore
 ├── ape_guia simulacion semana 4-firmado-signed.pdf
@@ -139,11 +145,16 @@ practica04-simulacion/
 │   ├── Main.java
 │   ├── modelo/
 │   │   ├── Persona.java
-│   │   └── SimulacionSIR.java
+│   │   ├── SimulacionSIR.java
+│   │   ├── ConfiguracionSIR.java
+│   │   └── ResultadoPaso.java
 │   ├── vista/
 │   │   └── VistaConsola.java
-│   └── controlador/
-│       └── SimulacionControlador.java
+│   ├── controlador/
+│   │   ├── SimulacionControlador.java
+│   │   └── ExportadorCsv.java
+│   └── verificacion/
+│       └── VerificacionSIR.java
 ├── resultados/
 │   ├── resultados_java.csv
 │   └── parametros_java.csv
@@ -157,13 +168,17 @@ practica04-simulacion/
 |---|---|
 | `Main.java` | Inicia el controlador y avisa si hubo errores al guardar archivos. |
 | `modelo/Persona.java` | Representa a una persona y sus tres estados posibles. |
-| `modelo/SimulacionSIR.java` | Define los parámetros, aplica los cambios de estado y cuenta S, I y R. |
+| `modelo/SimulacionSIR.java` | Aplica los cambios de estado y cuenta S, I y R. Recibe configuración inmutable. |
+| `modelo/ConfiguracionSIR.java` | Configuración inmutable con validación (población, beta, gamma, semilla, etc.). |
+| `modelo/ResultadoPaso.java` | Registro inmutable de un paso: tiempo, susceptibles, infectados, recuperados. |
 | `vista/VistaConsola.java` | Muestra parámetros y resultados en la terminal. |
-| `controlador/SimulacionControlador.java` | Ejecuta el modelo y exporta resultados y parámetros para NetLogo. |
+| `controlador/SimulacionControlador.java` | Coordina modelo, exportación y vista. |
+| `controlador/ExportadorCsv.java` | Exporta resultados y configuración a CSV y copia a NetLogo. |
+| `verificacion/VerificacionSIR.java` | Verificación automática de invariantes (población constante, conteos no negativos, etc.). |
 | `resultados/` | Datos calculados por Java. |
 | `netlogo/` | Modelo visual con sus controles, código y gráficas, más las copias de los CSV. |
 
-El flujo es `Main → controlador → modelo → vista`, y el controlador se encarga de la exportación. La carpeta `build/` guarda los archivos compilados en tu computador y no se sube al repositorio.
+El flujo es `Main → controlador → modelo → vista`; el controlador coordina la exportación a través de `ExportadorCsv`. La carpeta `build/` guarda los archivos compilados en tu computador y no se sube al repositorio.
 
 ## 7. Información adicional
 
@@ -211,6 +226,7 @@ Java mide lo que tarda en calcular el modelo y contar los resultados, sin imprim
 ### Verificación
 
 - El código Java compila con `--release 11` y genera los CSV: 101 registros, con conteos enteros no negativos y población de 100.
+- Verificación automática con aserciones: `java -ea -cp build verificacion.VerificacionSIR` comprueba que la población se mantiene constante, los conteos nunca son negativos, el estado inicial coincide con la configuración y, una vez que no hay infectados, estos permanecen en cero.
 - En las gráficas, S no aumenta, R no disminuye, cada una tiene los puntos esperados, recargar no los duplica y **setup** repite la ejecución con la misma semilla.
 - La simulación de NetLogo tiene movimiento y **go** está en modo continuo; se detiene al llegar a t = 100.
 - La sincronización visual hay que probarla abriendo el modelo en NetLogo 7.0.4 y pulsando **ACTUALIZAR JAVA**.
