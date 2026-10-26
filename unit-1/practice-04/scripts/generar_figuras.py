@@ -6,7 +6,7 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
-BASE = Path(__file__).resolve().parents[1]
+BASE = Path(__file__).resolve().parents[1] / 'reports'
 OUT = BASE / 'figures'
 OUT.mkdir(exist_ok=True)
 plt.rcParams.update({'font.family': 'DejaVu Sans', 'font.size': 10.5,
