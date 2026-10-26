@@ -5,7 +5,12 @@ __pycache__/
 .vscode/
 .idea/
 
-# Archivos auxiliares de LaTeX (el PDF del informe sí se versiona)
+# Guías y documentos no se versionan
+docs/
+reports/
+*.pdf
+
+# Archivos auxiliares de LaTeX
 *.aux
 *.log
 *.out

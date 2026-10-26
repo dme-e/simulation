@@ -2,3 +2,14 @@ build/
 *.class
 *.log
 *~
+
+# Documentos e informes no se versionan
+*.pdf
+reports/*.tex
+reports/*.md
+reports/assets/
+
+# Entornos e IDE
+.venv/
+.vscode/
+.idea/
