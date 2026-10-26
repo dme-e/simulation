@@ -1,0 +1,6 @@
+//se debe llenar con la ruta del archivo jar de NetLogo
+{
+    "java.project.referencedLibraries": [
+        "/home/user/NetLogo 7.0.4/lib/app/netlogo-7.0.4.jar"
+    ]
+}

@@ -1,147 +1,129 @@
-# Práctica 04 - Modelo SIR en Java y NetLogo
+# Práctica 04: Modelo SIR en Java y NetLogo
 
-## 1. Descripción del proyecto
+Simulación de cómo se propaga una infección en una población, con el mismo modelo en dos herramientas: **Java** calcula y exporta los datos, y **NetLogo** los dibuja y corre además su propia simulación con movimiento.
 
-Simula la propagación de una infección en una población de 100 personas. Cada
-persona puede ser susceptible (S), infectada (I) o recuperada (R). Los cambios
-siguen el orden `S → I → R`, sin nacimientos, muertes ni reinfecciones.
+| | |
+|---|---|
+| Asignatura | Simulación, ciclo 5 (Carrera de Computación, UNL) |
+| Docente | José O. Guamán Q. |
+| Práctica | 04: Análisis comparativo de herramientas de simulación mediante un modelo común |
 
-El propósito es implementar el mismo modelo en Java y NetLogo y comparar su
-programación, visualización y resultados. Java genera un CSV; NetLogo lo importa,
-ejecuta también su propia simulación y muestra cinco gráficas.
+**Contenido:** [1. Descripción](#1-descripción) · [2. Tecnologías](#2-tecnologías) · [3. Instalación y ejecución](#3-instalación-y-ejecución) · [4. Uso en NetLogo](#4-uso-en-netlogo) · [5. Configuración y reglas](#5-configuración-y-reglas) · [6. Estructura](#6-estructura-del-proyecto) · [7. Información adicional](#7-información-adicional)
 
-La ficha incluye Python/SimPy, Java y NetLogo. Por el alcance indicado para este
-trabajo, se implementan Java y NetLogo. La parte de Python y la comparación de las
-tres herramientas quedan fuera de esta entrega. El informe técnico está en
-`reports/ape04_sir.pdf`, con el fuente editable en `reports/ape04_sir.tex`.
-La mención a M/M/1 en la rúbrica de la ficha es una errata: esta práctica usa SIR.
+---
 
-## 2. Tecnologías utilizadas
+## 1. Descripción
 
-- Java, con JDK 11 o posterior. Se utiliza únicamente la biblioteca estándar.
-- NetLogo 7.0.4 y su extensión `csv`, incluida en la distribución de escritorio.
-- Organización Modelo, Vista y Controlador (MVC) para el código Java.
+El modelo SIR divide una población de 100 personas en tres estados: susceptible (S), infectada (I) y recuperada (R). Cada persona pasa de S a I y de I a R, sin nacimientos, muertes ni reinfecciones.
 
-El modelo se entrega en `.nlogox`, el formato de NetLogo 7. No se debe cambiar
-manualmente su extensión a `.nlogo`. Consulta los
-[cambios oficiales del formato de NetLogo](https://docs.netlogo.org/versions).
+La idea de la práctica es programar el mismo modelo en dos herramientas y comparar cómo se programa cada una, cómo se visualiza y qué resultados da. El flujo es este:
 
-## 3. Instalación y ejecución de Java
+1. Java ejecuta la simulación y guarda los resultados en un CSV.
+2. NetLogo importa ese CSV y lo grafica.
+3. NetLogo corre también su propia simulación, con las personas moviéndose en pantalla, para compararla con la de Java.
 
-Instala un JDK y NetLogo de escritorio. No se necesita Maven, Gradle ni descargar
-librerías de Java.
+La ficha menciona tres herramientas (Python con SimPy, Java y NetLogo). En esta entrega se implementan **Java y NetLogo**; la parte de Python y la comparación entre las tres quedan fuera. El informe está en `reports/ape04_sir.pdf` y su fuente editable en `reports/ape04_sir.tex`.
 
-Abre una terminal **en la carpeta `practica04-simulacion`** y ejecuta:
+## 2. Tecnologías
+
+| Herramienta | Versión | Para qué se usa |
+|---|---|---|
+| Java (JDK) | 11 o posterior | Modelo, exportación de CSV y salida por consola. Solo biblioteca estándar. |
+| NetLogo | 7.0.4 | Simulación con movimiento y gráficas. Usa la extensión `csv`, que ya viene incluida. |
+| MVC | | Organización del código Java en modelo, vista y controlador. |
+
+El modelo de NetLogo está en formato `.nlogox` (el de NetLogo 7). No le cambies la extensión a `.nlogo` a mano; los cambios del formato están en la [documentación oficial](https://docs.netlogo.org/versions).
+
+## 3. Instalación y ejecución
+
+Necesitas tener instalados un JDK y NetLogo de escritorio. No hace falta Maven, Gradle ni descargar librerías.
+
+Abre una terminal en la carpeta `practica04-simulacion` y ejecuta:
 
 ```bash
 javac -encoding UTF-8 --release 11 -d build src/Main.java src/modelo/*.java src/vista/*.java src/controlador/*.java
 java -cp build Main
 ```
 
-El programa imprime una tabla cada diez pasos, el máximo de infectados, su tiempo
-y la duración del cálculo. Guarda las 101 filas, de t = 0 a t = 100, en:
+El programa imprime en consola una tabla cada diez pasos, el máximo de infectados, el tiempo en que ocurre y cuánto tardó el cálculo. También guarda las 101 filas (de t = 0 a t = 100) en estos archivos:
 
-- `resultados/resultados_java.csv`: resultados generados por Java.
-- `netlogo/resultados_java.csv`: copia idéntica para que NetLogo pueda leerla.
-- `resultados/parametros_java.csv`: parámetros usados por Java.
-- `netlogo/parametros_java.csv`: copia que sincroniza la simulación de NetLogo.
+| Archivo | Contenido |
+|---|---|
+| `resultados/resultados_java.csv` | Resultados generados por Java. |
+| `netlogo/resultados_java.csv` | Copia idéntica, para que NetLogo la pueda leer. |
+| `resultados/parametros_java.csv` | Parámetros que usó Java. |
+| `netlogo/parametros_java.csv` | Copia que NetLogo usa para quedar con los mismos parámetros. |
 
-Al ejecutar nuevamente Java se reemplazan ambos archivos. Si modificas el código,
-vuelve a compilar antes de ejecutar.
+Cada vez que ejecutas Java estos archivos se reemplazan. Si cambias el código, vuelve a compilar antes de ejecutar.
 
 ## 4. Uso en NetLogo
 
 1. Abre `netlogo/modelo_sir_netlogo.nlogox` con NetLogo 7.
-2. Para cambiar parámetros, edita los valores en `src/modelo/SimulacionSIR.java`,
-   compila y ejecuta Java desde la raíz del proyecto.
-3. Pulsa **ACTUALIZAR JAVA**. NetLogo reinicia el escenario, lee los parámetros
-   y los resultados exportados por Java, y muestra los valores activos en pantalla.
-   También puedes pulsar **setup**, que carga los mismos archivos.
-4. Pulsa **go**. Es un botón continuo: avanza la simulación propia de NetLogo
-   hasta el tiempo 100. Puedes volver a pulsarlo para interrumpirla.
-5. Observa las figuras y las curvas de NetLogo, que se construyen por pasos.
-6. Al terminar, compara las curvas completas de ambas herramientas.
+2. Si quieres cambiar parámetros, edítalos en `src/modelo/SimulacionSIR.java`, compila y ejecuta Java desde la raíz del proyecto.
+3. Pulsa **ACTUALIZAR JAVA**. NetLogo reinicia el escenario, lee los parámetros y los resultados que exportó Java y muestra los valores que quedaron activos. El botón **setup** carga los mismos archivos.
+4. Pulsa **go**. Es un botón continuo: avanza la simulación de NetLogo hasta el tiempo 100, y si lo vuelves a pulsar la interrumpe.
+5. Observa a las personas moverse y cómo se van armando las curvas paso a paso.
+6. Al terminar, compara las curvas completas de Java y de NetLogo.
 
-El botón **ACTUALIZAR JAVA** reinicia también la curva de NetLogo para que las dos
-simulaciones comiencen con los mismos parámetros. Primero hay que volver a ejecutar
-Java; el botón no compila ni ejecuta Java por su cuenta.
+**Controles**
 
-El control **PAUSA** (en segundos) empieza en `0.00`. Puedes aumentarlo hasta
-`0.50` para observar más despacio. La velocidad visual no cambia los parámetros
-ni la unidad de tiempo del modelo. También puedes usar la barra de velocidad
-de NetLogo si necesitas reducir más el ritmo.
+| Control | Qué hace |
+|---|---|
+| **setup** | Carga los mismos archivos que exportó Java. |
+| **ACTUALIZAR JAVA** | Reinicia el escenario, recarga los archivos que exportó Java y reinicia también la curva de NetLogo, para que ambas simulaciones partan con los mismos parámetros. Antes hay que volver a ejecutar Java: el botón no lo compila ni lo ejecuta. |
+| **go** | Avanza la simulación de NetLogo hasta t = 100 (modo continuo). |
+| **PAUSA** | Espera en segundos entre pasos. Empieza en `0.00` y llega hasta `0.50` para verlo más despacio. No cambia los parámetros ni la unidad de tiempo. Tampoco debes cambiarle el nombre. |
 
-El nombre del deslizador debe seguir siendo `PAUSA`: NetLogo 7.0.4 usa el texto
-visible del deslizador para definir su variable en la interfaz. La unidad `s`
-se configura por separado. Para detener y reanudar la ejecución, pulsa **go**.
+También puedes bajar la velocidad con la barra de velocidad de NetLogo.
 
-Los colores representan el estado actual: azul = susceptible, rojo = infectado,
-verde = recuperado. La etiqueta **P0** identifica al paciente cero y permanece
-visible cuando se recupera. Es una de las cinco personas infectadas iniciales;
-la variable I cuenta a todos los infectados.
+**Colores:** azul = susceptible, rojo = infectado, verde = recuperado. La etiqueta **P0** marca al paciente cero, que es una de las cinco personas infectadas al inicio, y se mantiene visible aunque se recupere.
 
 ## 5. Configuración y reglas
 
+### Parámetros
+
 | Parámetro | Valor de la ficha |
-| --- | ---: |
+|---|---:|
 | Población | 100 |
 | Susceptibles iniciales | 95 |
 | Infectados iniciales | 5 |
 | Recuperados iniciales | 0 |
-| Beta, probabilidad de transmisión por contacto | 0.30 |
-| Gamma, probabilidad de recuperación por paso | 0.10 |
+| Beta (probabilidad de contagio por contacto) | 0.30 |
+| Gamma (probabilidad de recuperación por paso) | 0.10 |
 | Tiempo máximo | 100 pasos |
 
-Java es la fuente de los parámetros. Al ejecutar el programa, exporta población,
-infectados iniciales, beta, gamma, tiempo máximo y semilla a
-`parametros_java.csv`; NetLogo los lee al pulsar **setup** o **ACTUALIZAR JAVA**.
-Así, al cambiar `GAMMA` en Java, no hace falta editar NetLogo manualmente. La semilla
-actual es `42`. Ambas herramientas usan los mismos parámetros, aunque las curvas
-pueden diferir porque usan generadores aleatorios distintos.
+Java es quien define los parámetros. Al ejecutarse exporta población, infectados iniciales, beta, gamma, tiempo máximo y semilla a `parametros_java.csv`, y NetLogo los lee al pulsar **setup** o **ACTUALIZAR JAVA**. Así, si cambias `GAMMA` en Java no hay que tocar NetLogo. La semilla actual es `42`.
 
-Antes de simular se comprueban los parámetros: población entera positiva,
-infectados iniciales entre 0 y la población, beta y gamma finitos en `[0, 1]`,
-tiempo entero no negativo y semilla entera entre `-2147483648` y `2147483647`.
-Una población de una persona es válida: no tiene contactos, pero puede recuperarse.
-El tiempo 0 produce solamente el estado inicial. Java informa los errores antes
-de exportar, por lo que una configuración inválida no reemplaza los CSV anteriores.
-NetLogo también valida los parámetros y exige conteos S, I y R enteros en el CSV.
-`0.9999999` es válido para beta o gamma; no es válido como número de personas.
+Antes de simular se revisan los parámetros: la población debe ser un entero positivo, los infectados iniciales deben estar entre 0 y la población, beta y gamma deben estar entre 0 y 1, el tiempo no puede ser negativo y la semilla debe ser un entero. Si algo no cumple, Java avisa y no reemplaza los CSV anteriores. NetLogo también valida los parámetros y que los conteos del CSV sean enteros.
 
-En cada paso:
+### Qué pasa en cada paso
 
 1. Se copia el estado actual de las personas.
-2. Cada infectado elige **un contacto**, al azar, entre las otras 99 personas.
-3. Si el contacto era susceptible al inicio del paso, se intenta infectarlo con
-   probabilidad beta.
-4. El infectado se recupera con probabilidad gamma, independientemente del contagio.
-5. Se aplican todos los cambios juntos y se registran S, I y R.
+2. Cada infectado elige **un contacto** al azar entre las otras 99 personas.
+3. Si ese contacto era susceptible al inicio del paso, se infecta con probabilidad beta.
+4. El infectado se recupera con probabilidad gamma, haya contagiado o no.
+5. Los cambios se aplican todos juntos y se registran S, I y R.
 
-Un recién infectado podrá contagiar o recuperarse a partir del siguiente paso.
-Los contactos pueden repetirse entre distintos infectados; una persona se cuenta
-una sola vez. Un infectado puede transmitir y recuperarse en el mismo paso.
-Aunque no queden infectados, se sigue registrando hasta t = 100.
+Algunos detalles de esta regla:
 
-La ficha permite contactos cercanos o seleccionados. Se eligen contactos al azar
-en toda la población para mantener la misma regla sencilla en ambas herramientas.
-El movimiento en NetLogo es ilustrativo: **la cercanía de las figuras no determina
-el contagio**. El azar de sus posiciones y movimiento se separa con
-`with-local-randomness` del utilizado por las reglas epidemiológicas.
+- Un recién infectado empieza a contagiar y a poder recuperarse desde el paso siguiente.
+- Varios infectados pueden elegir al mismo contacto; esa persona se cuenta una sola vez.
+- Un infectado puede contagiar y recuperarse en el mismo paso.
+- Aunque ya no queden infectados, se sigue registrando hasta t = 100.
 
-El fundamento de la ficha es:
+La ficha permite contactos cercanos o seleccionados. Aquí se eligen al azar entre toda la población para que la regla sea igual de simple en las dos herramientas. Por eso el movimiento en NetLogo es solo ilustrativo: **que dos figuras estén cerca no influye en el contagio**. El azar del movimiento está separado del azar de las reglas con `with-local-randomness`.
+
+### Fundamento
 
 ```text
 N = S + I + R
+
 dS/dt = -beta * S * I / N
-dI/dt = beta * S * I / N - gamma * I
-dR/dt = gamma * I
+dI/dt =  beta * S * I / N - gamma * I
+dR/dt =  gamma * I
 ```
 
-Aquí se utiliza la alternativa discreta por agentes indicada en la ficha, sin
-resolver directamente las ecuaciones diferenciales. Beta y gamma se interpretan
-como probabilidades por contacto y por paso, respectivamente. `beta / gamma = 3`
-es la referencia teórica de reproducción del modelo de la guía, no un número
-exacto de contagios que deba producir cada persona en una ejecución aleatoria.
+No se resuelven las ecuaciones: se usa la alternativa discreta por agentes que propone la ficha, con beta y gamma como probabilidades por contacto y por paso. El valor `beta / gamma = 3` es una referencia de cuántos contagios produce, en promedio, un infectado; no es un número exacto que deba cumplirse en cada corrida.
 
 ## 6. Estructura del proyecto
 
@@ -171,84 +153,76 @@ practica04-simulacion/
     └── parametros_java.csv
 ```
 
-- `Main.java`: inicia el controlador y comunica errores al guardar archivos.
-- `modelo/Persona.java`: representa a una persona y sus tres estados posibles.
-- `modelo/SimulacionSIR.java`: define parámetros, realiza los cambios y cuenta estados.
-- `vista/VistaConsola.java`: presenta parámetros y resultados en la terminal.
-- `controlador/SimulacionControlador.java`: ejecuta el modelo y exporta resultados y parámetros para NetLogo.
-- `netlogo/`: contiene el modelo visual, sus controles, código y gráficas.
-- `resultados/`: conserva los datos calculados por Java.
+| Archivo o carpeta | Qué hace |
+|---|---|
+| `Main.java` | Inicia el controlador y avisa si hubo errores al guardar archivos. |
+| `modelo/Persona.java` | Representa a una persona y sus tres estados posibles. |
+| `modelo/SimulacionSIR.java` | Define los parámetros, aplica los cambios de estado y cuenta S, I y R. |
+| `vista/VistaConsola.java` | Muestra parámetros y resultados en la terminal. |
+| `controlador/SimulacionControlador.java` | Ejecuta el modelo y exporta resultados y parámetros para NetLogo. |
+| `resultados/` | Datos calculados por Java. |
+| `netlogo/` | Modelo visual con sus controles, código y gráficas, más las copias de los CSV. |
 
-El flujo es `Main → controlador → modelo → vista`, con la exportación coordinada
-por el controlador. `build/` contiene archivos compilados locales y se excluye
-del repositorio. Para entregar, incluye el proyecto completo con los fuentes,
-el modelo NetLogo y los CSV de resultados y parámetros; no necesitas incluir `build/`.
+El flujo es `Main → controlador → modelo → vista`, y el controlador se encarga de la exportación. La carpeta `build/` guarda los archivos compilados en tu computador y no se sube al repositorio.
 
-## 7. Resultados y gráficas
+## 7. Información adicional
 
-Los resultados se guardan en un CSV de cuatro columnas; un segundo CSV contiene
-los parámetros del escenario para que NetLogo use los mismos valores.
+### Resultados y gráficas
+
+Java guarda los resultados en un CSV de cuatro columnas:
 
 ```csv
 tiempo,susceptibles,infectados,recuperados
 0,95,5,0
 ```
 
-No contiene posiciones, movimientos ni historiales individuales. No se genera
-manualmente: se escribe desde Java. NetLogo valida encabezado, tiempos, conteos
-enteros no negativos, estado inicial y conservación de la población al importarlo.
+El archivo no incluye posiciones ni historiales individuales, y lo escribe el propio programa Java. Al importarlo, NetLogo valida el encabezado, los tiempos, que los conteos sean enteros no negativos, el estado inicial y que la población se conserve.
 
-| Gráfica en NetLogo | Datos que presenta |
-| --- | --- |
+NetLogo muestra cinco gráficas:
+
+| Gráfica | Qué muestra |
+|---|---|
 | Evolucion Java | S, I y R importados del CSV. |
 | Evolucion NetLogo | S, I y R calculados por la simulación de NetLogo. |
-| Comparacion S | Susceptibles de Java y NetLogo. |
-| Comparacion I | Infectados de Java y NetLogo. |
-| Comparacion R | Recuperados de Java y NetLogo. |
+| Comparacion S | Susceptibles de Java y de NetLogo. |
+| Comparacion I | Infectados de Java y de NetLogo. |
+| Comparacion R | Recuperados de Java y de NetLogo. |
 
-Las comparaciones usan negro para Java y naranja para NetLogo. La curva completa
-de Java se carga desde el principio; NetLogo incorpora un punto por paso.
+En las comparaciones, Java va en negro y NetLogo en naranja. La curva de Java se carga completa desde el inicio y la de NetLogo suma un punto por paso.
 
-La tabla siguiente es una referencia de la configuración base de la ficha
-(gamma = 0.10, semilla 42). Si cambias parámetros, sus curvas y métricas cambian
-al ejecutar Java y sincronizar NetLogo.
+Valores de referencia con la configuración base de la ficha (gamma = 0.10, semilla 42). Si cambias los parámetros, cambian las curvas y estas cifras.
 
 | Medida | Java | NetLogo 7.0.4 |
-| --- | ---: | ---: |
+|---|---:|---:|
 | Máximo de infectados | 29 | 44 |
 | Primer tiempo con ese máximo | 31 | 11 |
 | Susceptibles en t = 100 | 13 | 8 |
 | Infectados en t = 100 | 0 | 0 |
 | Recuperados en t = 100 | 87 | 92 |
 
-Las mismas reglas y parámetros no garantizan la misma trayectoria: Java y NetLogo
-emplean generadores y secuencias aleatorias diferentes. La semilla permite repetir
-una ejecución en cada implementación; no sincroniza sus números aleatorios.
-Estos valores corresponden a una corrida, no a promedios ni intervalos estadísticos.
+Son los resultados de una sola corrida, no promedios. Aunque las reglas y los parámetros sean los mismos, la trayectoria no tiene por qué coincidir: Java y NetLogo usan generadores de números aleatorios distintos. La semilla permite repetir una ejecución dentro de cada herramienta, pero no hace que las dos generen los mismos números.
 
-Para el análisis del informe, las gráficas permiten observar el descenso de S,
-el crecimiento y descenso de I, el aumento de R, el máximo de infectados y las
-diferencias entre herramientas. También debe explicarse el efecto del azar.
+Para el análisis, las gráficas permiten ver cómo baja S, cómo sube y luego baja I, cómo crece R, cuándo ocurre el máximo de infectados y en qué se diferencian las dos herramientas, explicando el efecto del azar.
 
-Java informa el tiempo de ejecutar el modelo y contar sus resultados, sin escribir
-archivos ni imprimir. El monitor de NetLogo suma el tiempo de actualizar estados,
-sin movimiento, conteos para gráficas, CSV ni pausas. Las mediciones son orientativas
-y no equivalen a una comparación controlada de rendimiento entre lenguajes.
+### Tiempo de ejecución
 
-## 8. Verificación
+Java mide lo que tarda en calcular el modelo y contar los resultados, sin imprimir ni escribir archivos. El monitor de NetLogo suma solo el tiempo de actualizar los estados, sin movimiento, conteos para las gráficas, CSV ni pausas. Son medidas orientativas, no una comparación de rendimiento entre lenguajes.
 
-Se verificaron la compilación de Java para versión 11, la generación de los dos
-copias idénticas de los CSV y la compilación de Java para versión 11. En el caso
-actual, Java genera 101 registros, conteos enteros no negativos y población 100.
-La sincronización visual debe abrirse en NetLogo 7.0.4 y actualizarse con el botón
-ACTUALIZAR JAVA.
+### Verificación
 
-Se comprobó que S no aumenta, R no disminuye, las cinco gráficas contienen los
-puntos esperados, la recarga no los duplica y setup reproduce la ejecución con
-la misma semilla. La simulación visual tiene movimiento y go está configurado
-como continuo con parada al alcanzar t = 100.
+- El código Java compila con `--release 11` y genera los CSV: 101 registros, con conteos enteros no negativos y población de 100.
+- En las gráficas, S no aumenta, R no disminuye, cada una tiene los puntos esperados, recargar no los duplica y **setup** repite la ejecución con la misma semilla.
+- La simulación de NetLogo tiene movimiento y **go** está en modo continuo; se detiene al llegar a t = 100.
+- La sincronización visual hay que probarla abriendo el modelo en NetLogo 7.0.4 y pulsando **ACTUALIZAR JAVA**.
 
-El informe incluye metodología, análisis de las cinco gráficas, respuestas a las
-preguntas de control, la tabla de comparación y una declaración de uso de IA con
-un prompt general representativo. La comparación de Python/SimPy y el video de
-demostración quedan pendientes porque no se implementó esa tercera herramienta.
+### Informe
+
+El informe incluye la metodología, el análisis de las cinco gráficas, las respuestas a las preguntas de control y la tabla de comparación. La comparación con Python/SimPy y el video de demostración quedan pendientes porque esa tercera herramienta no se implementó.
+
+### Nota sobre la ficha
+
+La rúbrica de la ficha menciona un modelo M/M/1, pero es un error de la guía: esta práctica usa el modelo SIR.
+
+### Entrega
+
+Se sube el proyecto completo: fuentes, modelo de NetLogo, CSV de resultados y de parámetros e informe. La carpeta `build/` no hace falta.
